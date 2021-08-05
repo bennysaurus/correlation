@@ -7,6 +7,11 @@ import sys
 import os
 import dpkt
 
+def remove_suffix(input_string, suffix):
+    if suffix and input_string.endswith(suffix):
+        return input_string[:-len(suffix)]
+    return input_string
+
 # Parse multiple pcaps and correlate their times together.
 # Obviously requires highly accurate timing such as a single capture point or syncronised times.
 
@@ -45,7 +50,7 @@ for capture in captures:
         eth = dpkt.ethernet.Ethernet(pkt) 
 
         #Filter non-ethernet packets
-        if eth.type != dpkt.ethernet.ETH_TYPE_IP:
+        if not isinstance(eth.data, dpkt.IP):
             continue
 
         ip=eth.data
@@ -89,7 +94,7 @@ for group in packetDict.values():
             
         prev_ts = item['timestamp']
 
-    output = cap_names.removesuffix('->') + "," + ts_builder.removesuffix(',')
+    output = remove_suffix(cap_names,'->') + "," + remove_suffix(ts_builder,',')
     print(output)
 
 print("Total number of packets in the pcap file: ", counter, file=sys.stderr)
